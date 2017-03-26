@@ -2,8 +2,6 @@ package com.example.alexander.yatranslater;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -15,8 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -34,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    private Retrofit retrofit;
+    private static TranslateApi translateApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,15 +55,11 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout2 = (TabLayout) findViewById(R.id.bottom_tabs);
         tabLayout2.setupWithViewPager(mViewPager);
 
-      FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-      fab.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-              Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                      .setAction("Action", null).show();
-          }
-      });
-      
+        retrofit = new Retrofit.Builder()
+                .baseUrl("https://httpbin.org/") //Базовая часть адреса
+                .addConverterFactory(GsonConverterFactory.create()) //Конвертер, необходимый для преобразования JSON'а в объекты
+                .build();
+        translateApi = retrofit.create(TranslateApi.class);
     }
 
 
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                     imageButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            new TranslateTask(textView).execute();
+                            new TranslateTask(textView,translateApi).execute();
                         }
                     });
                     break;
@@ -154,35 +154,43 @@ public class MainActivity extends AppCompatActivity {
 }
 
 
-class TranslateTask extends AsyncTask<Void, Void, Void> {
+class TranslateTask extends AsyncTask<Void, Void, String> {
 
     private TextView textView;
+    private TranslateApi translateApi;
 
-    public TranslateTask(TextView textView){
+    public TranslateTask(TextView textView, TranslateApi translateApi){
 
         this.textView = textView;
+        this.translateApi = translateApi;
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
         textView.setText("Полез на крышу");
+
+
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
+    protected String doInBackground(Void... params) {
+        Call<DataResponse> responseCall = translateApi.getWrap();
         try {
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException e) {
+            String origin = responseCall.execute().body().getOrigin();
+            return origin;
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
     @Override
-    protected void onPostExecute(Void result) {
+    protected void onPostExecute(String result) {
         super.onPostExecute(result);
         textView.setText("Залез");
+
+        Toast.makeText(textView.getContext(),result, Toast.LENGTH_SHORT).show();
     }
 }
 
