@@ -1,6 +1,5 @@
 package com.example.alexander.yatranslater;
 
-import android.app.Application;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -9,23 +8,16 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import dagger.Component;
-import dagger.Module;
-import dagger.Provides;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
@@ -65,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         tabLayout2.setupWithViewPager(mViewPager);
 
         retrofit = new Retrofit.Builder()
-                .baseUrl("https://httpbin.org/") //Базовая часть адреса
+                .baseUrl("https://translate.yandex.net/api/v1.5/") //Базовая часть адреса
                 .addConverterFactory(GsonConverterFactory.create()) //Конвертер, необходимый для преобразования JSON'а в объекты
                 .build();
         translateApi = retrofit.create(TranslateApi.class);
@@ -171,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
 class TranslateTask extends AsyncTask<Void, Void, String> {
 
     private TextView textView;
@@ -192,10 +185,10 @@ class TranslateTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected String doInBackground(Void... params) {
-        Call<DataResponse> responseCall = translateApi.getWrap();
+        Call<DataResponse> responseCall = translateApi.getWrap("en-ru", Constants.TranslateApiKey, "Hello World!");
         try {
-            String origin = responseCall.execute().body().getOrigin();
-            return origin;
+            String text = responseCall.execute().body().getText().get(0);
+            return text;
         } catch (IOException e) {
             e.printStackTrace();
         }

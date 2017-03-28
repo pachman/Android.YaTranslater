@@ -3,30 +3,42 @@ package com.example.alexander.yatranslater;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-/**
- * Created by Alexander on 26.03.2017.
- */
+import java.util.List;
+
 public class DataResponse {
-    @SerializedName("origin")
+
+    @SerializedName("code")
     @Expose
-    private String origin;
-    @SerializedName("url")
+    private Integer code;
+    @SerializedName("lang")
     @Expose
-    private String url;
+    private String lang;
+    @SerializedName("text")
+    @Expose
+    private List<String> text = null;
 
-    public String getOrigin() {
-        return origin;
+    public Integer getCode() {
+        return code;
     }
 
-    public void setOrigin(String origin) {
-        this.origin = origin;
+    public void setCode(Integer code) {
+        this.code = code;
     }
 
-    public String getUrl() {
-        return url;
+    public String getLang() {
+        return lang;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setLang(String lang) {
+        this.lang = lang;
     }
+
+    public List<String> getText() {
+        return text;
+    }
+
+    public void setText(List<String> text) {
+        this.text = text;
+    }
+
 }
