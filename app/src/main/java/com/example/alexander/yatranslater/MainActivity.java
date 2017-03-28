@@ -1,5 +1,6 @@
 package com.example.alexander.yatranslater;
 
+import android.app.Application;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -8,16 +9,23 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import dagger.Component;
+import dagger.Module;
+import dagger.Provides;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private Retrofit retrofit;
     private static TranslateApi translateApi;
+    Vehicle vehicle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create()) //Конвертер, необходимый для преобразования JSON'а в объекты
                 .build();
         translateApi = retrofit.create(TranslateApi.class);
+
+        VehicleComponent component = DaggerVehicleComponent.builder().vehicleModule(new VehicleModule()).build();
+
+        vehicle = component.provideVehicle();
+
+        Toast.makeText(this, String.valueOf(vehicle.getSpeed()), Toast.LENGTH_SHORT).show();
     }
 
 
@@ -151,7 +166,9 @@ public class MainActivity extends AppCompatActivity {
             return rootView;
         }
     }
+
 }
+
 
 
 class TranslateTask extends AsyncTask<Void, Void, String> {
