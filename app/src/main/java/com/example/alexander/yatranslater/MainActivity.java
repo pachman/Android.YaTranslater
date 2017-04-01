@@ -117,12 +117,7 @@ public class MainActivity extends AppCompatActivity {
                     rootView = getView( R.layout.history_fragment, inflater, container);
                     final TextView textView = (TextView) rootView.findViewById(R.id.history_label);
                     ImageButton imageButton= (ImageButton) rootView.findViewById(R.id.buttonSettings);
-                    imageButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            new TranslateTask(textView,translateClient).execute();
-                        }
-                    });
+                    imageButton.setOnClickListener(view-> new TranslateTask(textView,translateClient).execute());
                     break;
                 case 2:
                     rootView = getView( R.layout.favorite_fragment, inflater, container);
