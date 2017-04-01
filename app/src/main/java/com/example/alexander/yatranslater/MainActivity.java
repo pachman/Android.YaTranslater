@@ -14,31 +14,21 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import com.example.alexander.yatranslater.dependency.DaggerTranslateComponent;
+import com.example.alexander.yatranslater.dependency.TranslateComponent;
+import com.example.alexander.yatranslater.dependency.TranslateModule;
+import com.example.alexander.yatranslater.service.TranslateClient;
+import com.example.alexander.yatranslater.service.TranslatedPhrase;
 
 import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide
-     * fragments for each of the sections. We use a
-     * {@link FragmentPagerAdapter} derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
     private ViewPager mViewPager;
-    private Retrofit retrofit;
-    private static TranslateApi translateApi;
-    Vehicle vehicle;
+
+    static TranslateClient translateClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,17 +46,12 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout2 = (TabLayout) findViewById(R.id.bottom_tabs);
         tabLayout2.setupWithViewPager(mViewPager);
 
-        retrofit = new Retrofit.Builder()
-                .baseUrl("https://translate.yandex.net/api/v1.5/") //Базовая часть адреса
-                .addConverterFactory(GsonConverterFactory.create()) //Конвертер, необходимый для преобразования JSON'а в объекты
-                .build();
-        translateApi = retrofit.create(TranslateApi.class);
+        TranslateComponent component = DaggerTranslateComponent.builder().translateModule(new TranslateModule()).build();
 
-        VehicleComponent component = DaggerVehicleComponent.builder().vehicleModule(new VehicleModule()).build();
+        translateClient = component.provideTranslateClient();
 
-        vehicle = component.provideVehicle();
-
-        Toast.makeText(this, String.valueOf(vehicle.getSpeed()), Toast.LENGTH_SHORT).show();
+        //ButterKnife.bind(this);
+        //Toast.makeText(this, String.valueOf(vehicle.getSpeed()), Toast.LENGTH_SHORT).show();
     }
 
 
@@ -108,16 +93,8 @@ public class MainActivity extends AppCompatActivity {
      * A placeholder fragment containing a simple view.
      */
     public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
         private static final String ARG_SECTION_NUMBER = "section_number";
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
         public static PlaceholderFragment newInstance(int sectionNumber) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
@@ -137,27 +114,33 @@ public class MainActivity extends AppCompatActivity {
             View rootView;
             switch (position) {
                 case 1:
-                    rootView = inflater.inflate(R.layout.history_fragment, container, false);
+                    rootView = getView( R.layout.history_fragment, inflater, container);
                     final TextView textView = (TextView) rootView.findViewById(R.id.history_label);
-                    ImageButton imageButton = (ImageButton) rootView.findViewById(R.id.buttonSettings);
+                    ImageButton imageButton= (ImageButton) rootView.findViewById(R.id.buttonSettings);
                     imageButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            new TranslateTask(textView,translateApi).execute();
+                            new TranslateTask(textView,translateClient).execute();
                         }
                     });
                     break;
                 case 2:
-                    rootView = inflater.inflate(R.layout.favorite_fragment, container, false);
+                    rootView = getView( R.layout.favorite_fragment, inflater, container);
                     break;
                 default:
-                    rootView = inflater.inflate(R.layout.fragment_main, container, false);
+                    rootView = getView( R.layout.fragment_main, inflater, container);
                     break;
             }
 
             return rootView;
         }
-    }
+
+        private View getView( int idLayout, LayoutInflater inflater, ViewGroup container) {
+            View rootView = inflater.inflate(idLayout, container, false);
+            return rootView;
+        }
+
+   }
 
 }
 
@@ -166,10 +149,10 @@ public class MainActivity extends AppCompatActivity {
 
 class TranslateTask extends AsyncTask<Void, Void, String> {
 
+    private final TranslateClient translateApi;
     private TextView textView;
-    private TranslateApi translateApi;
 
-    public TranslateTask(TextView textView, TranslateApi translateApi){
+    public TranslateTask(TextView textView, TranslateClient translateApi){
 
         this.textView = textView;
         this.translateApi = translateApi;
@@ -185,9 +168,10 @@ class TranslateTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected String doInBackground(Void... params) {
-        Call<DataResponse> responseCall = translateApi.getWrap("en-ru", Constants.TranslateApiKey, "Hello World!");
+        TranslatedPhrase responseCall;
         try {
-            String text = responseCall.execute().body().getText().get(0);
+            responseCall = translateApi.Translate("Hello World!", "en","ru");
+            String text = responseCall.getText().get(0);
             return text;
         } catch (IOException e) {
             e.printStackTrace();

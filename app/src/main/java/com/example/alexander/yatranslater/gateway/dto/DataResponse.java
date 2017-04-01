@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslater;
+package com.example.alexander.yatranslater.gateway.dto;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
