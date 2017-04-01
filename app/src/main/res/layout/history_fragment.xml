@@ -24,12 +24,7 @@
     <ListView
             android:id="@+id/historyListView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" android:layout_below="@+id/buttonSettings"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/buttonSettings"
             android:layout_alignParentStart="true"/>
-    <ProgressBar
-            android:id="@+id/progressTask"
-            style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_alignParentBottom="true"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
 </RelativeLayout>

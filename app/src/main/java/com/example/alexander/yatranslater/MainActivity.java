@@ -1,6 +1,6 @@
 package com.example.alexander.yatranslater;
 
-import android.os.AsyncTask;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -11,55 +11,68 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 import com.example.alexander.yatranslater.dependency.DaggerTranslateComponent;
 import com.example.alexander.yatranslater.dependency.TranslateComponent;
 import com.example.alexander.yatranslater.dependency.TranslateModule;
-import com.example.alexander.yatranslater.service.TranslateClient;
-import com.example.alexander.yatranslater.service.TranslatedPhrase;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
-
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-
-    private ViewPager mViewPager;
-
-    static TranslateClient translateClient;
+    private TabLayout tabLayout;
+    static TranslateComponent component;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        component = DaggerTranslateComponent.builder().translateModule(new TranslateModule()).build();
+        //ButterKnife.bind(this);
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
+        createViewPager(mViewPager);
 
-        mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.main_tabs);
+        tabLayout = (TabLayout) findViewById(R.id.bottom_tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        TabLayout tabLayout2 = (TabLayout) findViewById(R.id.bottom_tabs);
-        tabLayout2.setupWithViewPager(mViewPager);
+        createTabIcons();
+    }
 
-        TranslateComponent component = DaggerTranslateComponent.builder().translateModule(new TranslateModule()).build();
+    private void createTabIcons() {
 
-        translateClient = component.provideTranslateClient();
+        TextView tabOne = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+        tabOne.setText(getString(R.string.translate));
+        tabOne.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_translate_black_24dp, 0, 0);
+        tabLayout.getTabAt(0).setCustomView(tabOne);
 
-        //ButterKnife.bind(this);
-        //Toast.makeText(this, String.valueOf(vehicle.getSpeed()), Toast.LENGTH_SHORT).show();
+        TextView tabTwo = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+        tabTwo.setText(getString(R.string.history));
+        tabTwo.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_schedule_black_24dp, 0, 0);
+        tabLayout.getTabAt(1).setCustomView(tabTwo);
+
+        TextView tabThree = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+        tabThree.setText(getString(R.string.favorite));
+        tabThree.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_book_black_24dp, 0, 0);
+        tabLayout.getTabAt(2).setCustomView(tabThree);
     }
 
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
+    private void createViewPager(ViewPager viewPager) {
+        SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        adapter.addFrag(PlaceholderFragment.newInstance(0), getString(R.string.translate));
+        adapter.addFrag(PlaceholderFragment.newInstance(1), getString(R.string.history));
+        adapter.addFrag(PlaceholderFragment.newInstance(2), getString(R.string.favorite));
+        viewPager.setAdapter(adapter);
+    }
+
+
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -67,31 +80,25 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            return mFragmentList.get(position);
+        }
+
+        public void addFrag(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
         }
 
         @Override
         public int getCount() {
-            return 2;
+            return mFragmentList.size();
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getString(R.string.history);
-                case 1:
-                    return getString(R.string.favorite);
-            }
-            return null;
+            return mFragmentTitleList.get(position);
         }
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
     public static class PlaceholderFragment extends Fragment {
         private static final String ARG_SECTION_NUMBER = "section_number";
 
@@ -103,9 +110,6 @@ public class MainActivity extends AppCompatActivity {
             return fragment;
         }
 
-        public PlaceholderFragment() {
-        }
-
         @Override
         public View onCreateView(LayoutInflater inflater,
                                  ViewGroup container,
@@ -114,72 +118,48 @@ public class MainActivity extends AppCompatActivity {
             View rootView;
             switch (position) {
                 case 1:
-                    rootView = getView( R.layout.history_fragment, inflater, container);
-                    final TextView textView = (TextView) rootView.findViewById(R.id.history_label);
-                    ImageButton imageButton= (ImageButton) rootView.findViewById(R.id.buttonSettings);
-                    imageButton.setOnClickListener(view-> new TranslateTask(textView,translateClient).execute());
+                    rootView = getHistoryFragment(inflater, container);
                     break;
                 case 2:
-                    rootView = getView( R.layout.favorite_fragment, inflater, container);
+                    rootView = inflater.inflate(R.layout.favorite_fragment, container, false);
                     break;
                 default:
-                    rootView = getView( R.layout.fragment_main, inflater, container);
+                    rootView = inflater.inflate(R.layout.main_fragment, container, false);
                     break;
             }
 
             return rootView;
         }
 
-        private View getView( int idLayout, LayoutInflater inflater, ViewGroup container) {
-            View rootView = inflater.inflate(idLayout, container, false);
+        private View getHistoryFragment(LayoutInflater inflater, ViewGroup container) {
+            View rootView = inflater.inflate(R.layout.history_fragment, container, false);
+            final TextView textView = (TextView) rootView.findViewById(R.id.history_label);
+            ImageButton imageButton= (ImageButton) rootView.findViewById(R.id.buttonSettings);
+            ListView listView= (ListView) rootView.findViewById(R.id.historyListView);
+            Context context = textView.getContext();
+
+            component.provideTranslateClient()
+                    .getLanguages("ru")
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(supportLanguages -> {
+                        List<String> list = new ArrayList<>();
+                        for (Map.Entry<String, String> entry:supportLanguages.getLangs().entrySet()) {
+                            list.add(entry.getValue());
+                        }
+
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, list);
+
+                        listView.setAdapter(adapter);
+                    });
+
+            imageButton.setOnClickListener(view-> component.provideTranslateClient()
+                    .translate("Hello World!", "en","ru")
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(translatedPhrase -> Toast.makeText(context,translatedPhrase.getText().get(0), Toast.LENGTH_SHORT).show()));
             return rootView;
         }
-
    }
 
 }
-
-
-
-
-class TranslateTask extends AsyncTask<Void, Void, String> {
-
-    private final TranslateClient translateApi;
-    private TextView textView;
-
-    public TranslateTask(TextView textView, TranslateClient translateApi){
-
-        this.textView = textView;
-        this.translateApi = translateApi;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        textView.setText("Полез на крышу");
-
-
-    }
-
-    @Override
-    protected String doInBackground(Void... params) {
-        TranslatedPhrase responseCall;
-        try {
-            responseCall = translateApi.Translate("Hello World!", "en","ru");
-            String text = responseCall.getText().get(0);
-            return text;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(String result) {
-        super.onPostExecute(result);
-        textView.setText("Залез");
-
-        Toast.makeText(textView.getContext(),result, Toast.LENGTH_SHORT).show();
-    }
-}
-
