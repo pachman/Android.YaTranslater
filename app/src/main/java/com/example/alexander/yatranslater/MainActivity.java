@@ -16,7 +16,6 @@ import com.example.alexander.yatranslater.fragment.HistoryFragment;
 import com.example.alexander.yatranslater.fragment.TranslateFragment;
 
 public class MainActivity extends AppCompatActivity {
-    private TabLayout tabLayout;
     private static TranslateComponent component;
 
     @Override
@@ -25,33 +24,32 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         component = DaggerTranslateComponent.builder().translateModule(new TranslateModule()).build();
 
-
         //ButterKnife.bind(this);
 
-        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
-        createViewPager(mViewPager);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.container);
+        createViewPager(viewPager);
 
-        tabLayout = (TabLayout) findViewById(R.id.bottom_tabs);
-        tabLayout.setupWithViewPager(mViewPager);
-
-        createTabIcons();
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.bottom_tabs);
+        tabLayout.setupWithViewPager(viewPager);
+        createTabIcons(tabLayout);
     }
 
-    private void createTabIcons() {
-        TextView tabOne = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
-        tabOne.setText(getString(R.string.translate));
-        tabOne.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_translate_black_24dp, 0, 0);
-        tabLayout.getTabAt(0).setCustomView(tabOne);
+    private void createTabIcons(TabLayout tabLayout) {
+        int[] names = new int[]{
+                R.string.translate,
+                R.string.history,
+                R.string.favorite};
+        int[] icons = new int[]{
+                R.drawable.ic_translate_black_24dp,
+                R.drawable.ic_schedule_black_24dp,
+                R.drawable.ic_book_black_24dp};
 
-        TextView tabTwo = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
-        tabTwo.setText(getString(R.string.history));
-        tabTwo.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_schedule_black_24dp, 0, 0);
-        tabLayout.getTabAt(1).setCustomView(tabTwo);
-
-        TextView tabThree = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
-        tabThree.setText(getString(R.string.favorite));
-        tabThree.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_book_black_24dp, 0, 0);
-        tabLayout.getTabAt(2).setCustomView(tabThree);
+        for (int i = 0; i < names.length; i++) {
+            TextView tabOne = (TextView) LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+            tabOne.setText(getString(names[i]));
+            tabOne.setCompoundDrawablesWithIntrinsicBounds(0, icons[i], 0, 0);
+            tabLayout.getTabAt(i).setCustomView(tabOne);
+        }
     }
 
     private void createViewPager(ViewPager viewPager) {
