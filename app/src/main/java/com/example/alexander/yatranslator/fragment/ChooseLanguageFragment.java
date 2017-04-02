@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslater.fragment;
+package com.example.alexander.yatranslator.fragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,8 +10,8 @@ import android.widget.ListView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import com.example.alexander.yatranslater.R;
-import com.example.alexander.yatranslater.dependency.TranslateComponent;
+import com.example.alexander.yatranslator.R;
+import com.example.alexander.yatranslator.dependency.TranslateComponent;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 

@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslater.dependency;
+package com.example.alexander.yatranslator.dependency;
 
 import android.app.Application;
 

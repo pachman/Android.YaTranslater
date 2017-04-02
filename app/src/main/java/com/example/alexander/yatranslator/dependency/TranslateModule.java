@@ -1,7 +1,7 @@
-package com.example.alexander.yatranslater.dependency;
+package com.example.alexander.yatranslator.dependency;
 
-import com.example.alexander.yatranslater.service.TranslateClient;
-import com.example.alexander.yatranslater.service.YandexTranslateClient;
+import com.example.alexander.yatranslator.service.TranslateClient;
+import com.example.alexander.yatranslator.service.YandexTranslateClient;
 import dagger.Module;
 import dagger.Provides;
 

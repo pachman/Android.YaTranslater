@@ -1,5 +1,5 @@
 /*
-package com.example.alexander.yatranslater;
+package com.example.alexander.yatranslator;
 
 import org.junit.Test;
 

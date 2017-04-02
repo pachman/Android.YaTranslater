@@ -1,5 +1,5 @@
-# Android.YaTranslater
-My android translater
+# Android.YaTranslator
+My android translator
 
 dependencies
 -----------------------------------

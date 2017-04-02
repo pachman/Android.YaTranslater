@@ -1,7 +1,7 @@
-package com.example.alexander.yatranslater.gateway;
+package com.example.alexander.yatranslator.gateway;
 
-import com.example.alexander.yatranslater.gateway.dto.LanguagesResponse;
-import com.example.alexander.yatranslater.gateway.dto.TranslateResponse;
+import com.example.alexander.yatranslator.gateway.dto.LanguagesResponse;
+import com.example.alexander.yatranslator.gateway.dto.TranslateResponse;
 import io.reactivex.Observable;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;

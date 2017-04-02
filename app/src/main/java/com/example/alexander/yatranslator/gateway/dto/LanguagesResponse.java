@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslater.gateway.dto;
+package com.example.alexander.yatranslator.gateway.dto;
 
 import java.util.List;
 import java.util.Map;

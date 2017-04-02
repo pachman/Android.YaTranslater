@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslater;
+package com.example.alexander.yatranslator;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -7,13 +7,13 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.widget.TextView;
-import com.example.alexander.yatranslater.dependency.DaggerApp;
-import com.example.alexander.yatranslater.dependency.DaggerTranslateComponent;
-import com.example.alexander.yatranslater.dependency.TranslateComponent;
-import com.example.alexander.yatranslater.dependency.TranslateModule;
-import com.example.alexander.yatranslater.fragment.FavoriteFragment;
-import com.example.alexander.yatranslater.fragment.HistoryFragment;
-import com.example.alexander.yatranslater.fragment.TranslateFragment;
+import com.example.alexander.yatranslator.dependency.DaggerApp;
+import com.example.alexander.yatranslator.dependency.DaggerTranslateComponent;
+import com.example.alexander.yatranslator.dependency.TranslateComponent;
+import com.example.alexander.yatranslator.dependency.TranslateModule;
+import com.example.alexander.yatranslator.fragment.FavoriteFragment;
+import com.example.alexander.yatranslator.fragment.HistoryFragment;
+import com.example.alexander.yatranslator.fragment.TranslateFragment;
 
 public class MainActivity extends AppCompatActivity {
     private static TranslateComponent component;

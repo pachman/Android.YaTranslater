@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslater;
+package com.example.alexander.yatranslator;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
