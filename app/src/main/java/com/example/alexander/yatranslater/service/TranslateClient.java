@@ -1,5 +1,7 @@
 package com.example.alexander.yatranslater.service;
 
+import com.example.alexander.yatranslater.service.model.SupportLanguages;
+import com.example.alexander.yatranslater.service.model.TranslatedPhrase;
 import io.reactivex.Observable;
 
 /**

@@ -1,6 +1,8 @@
 package com.example.alexander.yatranslater.service;
 
 import com.example.alexander.yatranslater.gateway.TranslateApi;
+import com.example.alexander.yatranslater.service.model.SupportLanguages;
+import com.example.alexander.yatranslater.service.model.TranslatedPhrase;
 import io.reactivex.Observable;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;

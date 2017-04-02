@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslater.service;
+package com.example.alexander.yatranslater.service.model;
 
 import java.util.List;
 import java.util.Map;
