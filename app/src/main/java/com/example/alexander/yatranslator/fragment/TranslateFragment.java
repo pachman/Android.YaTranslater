@@ -17,15 +17,13 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TranslateFragment extends Fragment {
     @BindView(R.id.langFrom)
-    Spinner langFrom;
+    Spinner langFromSpinner;
     @BindView(R.id.langTo)
-    Spinner langTo;
+    Spinner langToSpinner;
     @BindView(R.id.translateText)
     MultiAutoCompleteTextView translateTextView;
     @BindView(R.id.translations)
@@ -38,6 +36,10 @@ public class TranslateFragment extends Fragment {
     @Inject
     TranslateComponent component;
     private Unbinder unbinder;
+
+    Map<String,String> LangsNameToShortName = new HashMap<>();
+    Map<String,String> LangsShortNameName;
+    List<String> LangsNames = new ArrayList<>();
 
     //ChooseLanguageFragment chooseLanguageFragment = new ChooseLanguageFragment();
     @Override
@@ -53,22 +55,35 @@ public class TranslateFragment extends Fragment {
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(supportLanguages -> {
-                    List<String> list = new ArrayList<>();
-                    for (Map.Entry<String, String> entry : supportLanguages.getLangs().entrySet()) {
-                        list.add(entry.getValue());
+                                 LangsShortNameName = supportLanguages.getLangs();
+                    for (Map.Entry<String, String> entry : LangsShortNameName.entrySet()) {
+                        LangsNames.add(entry.getValue());
+                        String key = entry.getKey();
+                        LangsNameToShortName.put(entry.getValue(), key);
                     }
+                    Collections.sort(LangsNames);
 
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, list);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, LangsNames);
 
-                    langFrom.setAdapter(adapter);
-                    langTo.setAdapter(adapter);
+                    langFromSpinner.setAdapter(adapter);
+                    langFromSpinner.setSelection(LangsNames.indexOf(LangsShortNameName.get("ru")));
+                    langToSpinner.setAdapter(adapter);
+                    langToSpinner.setSelection(LangsNames.indexOf(LangsShortNameName.get("en")));
                 });
+
+        swapLangButton.setOnClickListener(view -> {
+            int fromPosition = langFromSpinner.getSelectedItemPosition();
+            langFromSpinner.setSelection(langToSpinner.getSelectedItemPosition());
+            langToSpinner.setSelection(fromPosition);
+        });
 
         translateFab.setOnClickListener(view -> {
             String text = translateTextView.getText().toString();
-            String langFrom = "en";
-            String langTo = "ru";
+            String langFrom = LangsNameToShortName.get(langFromSpinner.getSelectedItem().toString());
+            String langTo = LangsNameToShortName.get(langToSpinner.getSelectedItem().toString());
             Log.d("text", text);
+            Log.d("langFrom", langFrom);
+            Log.d("langTo", langTo);
 
             component.provideTranslateClient()
                     .translate(text, langFrom, langTo)
