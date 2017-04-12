@@ -1,5 +1,6 @@
 package com.example.alexander.yatranslator.fragment;
 
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -12,7 +13,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import com.example.alexander.yatranslator.R;
+import com.example.alexander.yatranslator.db.tables.TranslationType;
 import com.example.alexander.yatranslator.dependency.TranslateComponent;
+import com.example.alexander.yatranslator.service.HistoryService;
+import com.pushtorefresh.storio.sqlite.StorIOSQLite;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -35,6 +39,11 @@ public class TranslateFragment extends Fragment {
 
     @Inject
     TranslateComponent component;
+    @Inject
+    SQLiteOpenHelper sqLiteOpenHelper;
+    @Inject
+    StorIOSQLite storIOSQLite;
+
     private Unbinder unbinder;
 
     Map<String,String> LangsNameToShortName = new HashMap<>();
@@ -92,6 +101,16 @@ public class TranslateFragment extends Fragment {
                     .subscribe(translatedPhrase -> {
                         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, translatedPhrase.getText());
                         translations.setAdapter(adapter);
+
+
+                        String direction = langFrom + "-" + langTo;
+
+                        HistoryService historyService = new HistoryService(storIOSQLite);
+
+                        historyService.putTranslateItem(TranslationType.History,direction, text, translatedPhrase.getText())
+                                .subscribeOn(Schedulers.newThread())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe();
                     });
         });
         return rootView;

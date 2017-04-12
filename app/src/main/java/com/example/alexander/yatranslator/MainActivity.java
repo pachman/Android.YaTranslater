@@ -1,16 +1,12 @@
 package com.example.alexander.yatranslator;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.widget.TextView;
-import com.example.alexander.yatranslator.dependency.DaggerApp;
-import com.example.alexander.yatranslator.dependency.DaggerTranslateComponent;
-import com.example.alexander.yatranslator.dependency.TranslateComponent;
-import com.example.alexander.yatranslator.dependency.TranslateModule;
+import com.example.alexander.yatranslator.dependency.*;
 import com.example.alexander.yatranslator.fragment.FavoriteFragment;
 import com.example.alexander.yatranslator.fragment.HistoryFragment;
 import com.example.alexander.yatranslator.fragment.TranslateFragment;
@@ -22,7 +18,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        component = DaggerTranslateComponent.builder().translateModule(new TranslateModule()).build();
+        component = DaggerTranslateComponent.builder()
+                .appModule(new AppModule(this))
+                .translateModule(new TranslateModule())
+                .dbModule(new DbModule())
+                .build();
 
         //ButterKnife.bind(this);
 
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void createTabIcons(TabLayout tabLayout) {
         int[] names = new int[]{
-                R.string.translate,
+                R.string.translation,
                 R.string.history,
                 R.string.favorite};
         int[] icons = new int[]{
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
         TranslateFragment translateFragment = new TranslateFragment();
         component.inject(translateFragment);
-        adapter.addFrag(translateFragment, getString(R.string.translate));
+        adapter.addFrag(translateFragment, getString(R.string.translation));
 
         HistoryFragment historyFragment = new HistoryFragment();
         component.inject(historyFragment);
@@ -68,10 +68,6 @@ public class MainActivity extends AppCompatActivity {
         adapter.addFrag(favoriteFragment, getString(R.string.favorite));
 
         viewPager.setAdapter(adapter);
-    }
-
-    public static TranslateComponent component(Context context){
-        return ((DaggerApp) context.getApplicationContext()).component;
     }
 }
 

@@ -8,18 +8,11 @@
                 android:paddingBottom="@dimen/activity_vertical_margin"
                 tools:context="com.example.alexander.yatranslator.MainActivity$PlaceholderFragment">
 
-    <TextView
-            android:id="@+id/history_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/history"/>
 
-    <ImageButton
-            android:src="@drawable/ic_settings_black_24dp"
-            android:id="@+id/buttonSettings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"/>
-
-
+    <ListView
+            android:id="@+id/historyListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"/>
 </RelativeLayout>

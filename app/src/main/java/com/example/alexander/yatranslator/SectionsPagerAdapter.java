@@ -3,6 +3,8 @@ package com.example.alexander.yatranslator;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.util.Log;
+import com.example.alexander.yatranslator.fragment.OnSelectedFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +19,13 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        return fragmentList.get(position);
+        Fragment fragment = fragmentList.get(position);
+        Log.d("[Debug]", "getItem "+position);
+        if(fragment instanceof OnSelectedFragment){
+            Log.d("[Debug]", "instanceof OnSelectedFragment");
+            ((OnSelectedFragment) fragment).onSelected();
+        }
+        return fragment;
     }
 
     public void addFrag(Fragment fragment, String title) {
