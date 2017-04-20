@@ -21,8 +21,16 @@ public class ParametersTable {
     public static final String COLUMN_DIRECTION_WITH_TABLE_PREFIX = TABLE + "." + COLUMN_DIRECTION;
     public static final String COLUMN_TEXT_WITH_TABLE_PREFIX = TABLE + "." + COLUMN_TEXT;
 
-    public static final Query QUERY_ALL = Query.builder()
+    public static final Query QUERY_ALL_HISTORY = Query.builder()
             .table(TABLE)
+            .where(COLUMN_TYPE + "= ?")
+            .whereArgs(TranslationType.History)
+            .build();
+
+    public static final Query QUERY_ALL_FAVORITE = Query.builder()
+            .table(TABLE)
+            .where(COLUMN_TYPE + "= ?")
+            .whereArgs(TranslationType.Favorite)
             .build();
 
     private ParametersTable() {

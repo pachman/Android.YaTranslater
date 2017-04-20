@@ -10,11 +10,15 @@ import java.util.List;
 public class TranslationItem {
     private final List<String> values;
     private final TranslationParameters parameters;
+    private Boolean isFavorite;
 
     public TranslationItem(TranslationParameters parameters, List<String> translations) {
         this.values = translations;
         this.parameters = parameters;
+        this.isFavorite = false;
     }
+
+
 
     public List<String> getValues() {
         return values;
@@ -22,5 +26,13 @@ public class TranslationItem {
 
     public TranslationParameters getParameters() {
         return parameters;
+    }
+
+    public Boolean getIsFavorite() {
+        return isFavorite;
+    }
+
+    public void setIsFavorite(Boolean favorite) {
+        isFavorite = favorite;
     }
 }

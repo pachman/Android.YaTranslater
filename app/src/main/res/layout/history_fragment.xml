@@ -9,10 +9,17 @@
                 tools:context="com.example.alexander.yatranslator.MainActivity$PlaceholderFragment">
 
 
+    <Button
+        android:id="@+id/refreshHistory"
+        android:text="Refresh history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
     <ListView
+        android:layout_below="@+id/refreshHistory"
             android:id="@+id/historyListView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentTop="true"
+
             android:layout_alignParentStart="true"/>
+
 </RelativeLayout>

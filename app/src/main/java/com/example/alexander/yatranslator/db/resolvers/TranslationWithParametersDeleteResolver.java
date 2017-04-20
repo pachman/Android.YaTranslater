@@ -1,10 +1,19 @@
 package com.example.alexander.yatranslator.db.resolvers;
 
 import android.support.annotation.NonNull;
+
+import com.example.alexander.yatranslator.db.Translation;
 import com.example.alexander.yatranslator.db.entities.TranslationItem;
+import com.example.alexander.yatranslator.db.tables.ParametersTable;
+import com.example.alexander.yatranslator.db.tables.TranslationsTable;
 import com.pushtorefresh.storio.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio.sqlite.operations.delete.DeleteResolver;
 import com.pushtorefresh.storio.sqlite.operations.delete.DeleteResult;
+import com.pushtorefresh.storio.sqlite.queries.Query;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Alexander on 09.04.2017.
@@ -13,26 +22,37 @@ public class TranslationWithParametersDeleteResolver extends DeleteResolver<Tran
     @NonNull
     @Override
     public DeleteResult performDelete(@NonNull StorIOSQLite storIOSQLite, @NonNull TranslationItem object) {
-/*        // 1 for user and other for his/her tweets
-        final List<Object> objectsToDelete = new ArrayList<Object>(1 + userWithTweets.tweets().size());
 
-        objectsToDelete.add(userWithTweets.user());
-        objectsToDelete.addAll(userWithTweets.tweets());
-
-        storIOSQLite
-                .delete()
-                .objects(objectsToDelete)
+        final List<Translation> translations = storIOSQLite
+                .get()
+                .listOfObjects(Translation.class)
+                .withQuery(Query.builder()
+                        .table(TranslationsTable.TABLE)
+                        .where(TranslationsTable.COLUMN_PARAMETERS_ID + "=?")
+                        .whereArgs(object.getParameters().getId())
+                        .build())
                 .prepare()
                 .executeAsBlocking();
 
-        // BTW, you can save it as static final
-        final Set<String> affectedTables = new HashSet<String>(2);
 
-        affectedTables.add(UsersTable.TABLE);
-        affectedTables.add(TweetsTable.TABLE);
+        storIOSQLite
+                .delete()
+                .object(object.getParameters())
+                .prepare()
+                .executeAsBlocking();
 
-        return DeleteResult.newInstance(objectsToDelete.size(), affectedTables);*/
+        storIOSQLite
+                .delete()
+                .objects(translations)
+                .prepare()
+                .executeAsBlocking();
 
-        return null;
+
+        final Set<String> affectedTables = new HashSet<>(2);
+
+        affectedTables.add(TranslationsTable.TABLE);
+        affectedTables.add(ParametersTable.TABLE);
+
+        return DeleteResult.newInstance(translations.size() + 1, affectedTables);
     }
 }
