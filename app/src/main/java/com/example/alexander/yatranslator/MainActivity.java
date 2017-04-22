@@ -8,12 +8,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.TextView;
+import com.example.alexander.yatranslator.db.TranslationParameters;
+import com.example.alexander.yatranslator.db.tables.TranslationType;
 import com.example.alexander.yatranslator.dependency.*;
 import com.example.alexander.yatranslator.fragment.FavoriteFragment;
 import com.example.alexander.yatranslator.fragment.HistoryFragment;
-import com.example.alexander.yatranslator.fragment.SelectFragmentImpl;
+import com.example.alexander.yatranslator.fragment.TranslationListFragment;
 import com.example.alexander.yatranslator.fragment.TranslateFragment;
-import com.example.alexander.yatranslator.service.HistoryService;
+import com.example.alexander.yatranslator.service.TranslationService;
 import com.example.alexander.yatranslator.ui.SectionsPagerAdapter;
 import com.example.alexander.yatranslator.ui.adapter.TranslationAdapter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -23,8 +25,9 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
+    String uiLang = Locale.getDefault().getLanguage();
     private static TranslateComponent component;
-
+    private static TranslationService translationService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,13 +38,14 @@ public class MainActivity extends AppCompatActivity {
                 .dbModule(new DbModule())
                 .build();
 
+        //todo перенести в DI
+        translationService = new TranslationService(component.provideStorIOSQLite());
+
         //ButterKnife.bind(this);
-        Log.d("[Debug]", "Locale " + Locale.getDefault().getLanguage());
 
-
+        Log.d("[Debug]", "Locale " + uiLang);
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.container);
-
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.bottom_tabs);
         createViewPager(viewPager, tabLayout);
@@ -76,63 +80,95 @@ public class MainActivity extends AppCompatActivity {
 
         appendFavoriteFragment(adapter);
 
-        TabLayout.TabLayoutOnPageChangeListener listener = new TabLayout.TabLayoutOnPageChangeListener(tabLayout){
+        TabLayout.TabLayoutOnPageChangeListener listener = new TabLayout.TabLayoutOnPageChangeListener(tabLayout) {
             @Override
             public void onPageSelected(int position) {
                 Log.d("[Debug]", "Selected " + position);
                 Fragment item = adapter.getItem(position);
-                if(item instanceof SelectFragmentImpl){
-                    ((SelectFragmentImpl)item).selectFragment();
+                if (item instanceof TranslationListFragment) {
+                    ((TranslationListFragment) item).refresh();
                 }
-
             }
         };
         viewPager.addOnPageChangeListener(listener);
-
         viewPager.setAdapter(adapter);
     }
 
     private void appendFavoriteFragment(SectionsPagerAdapter adapter) {
         FavoriteFragment favoriteFragment = new FavoriteFragment();
-        component.inject(favoriteFragment);
         adapter.addFrag(favoriteFragment, getString(R.string.favorite));
+
+        initListFragment(favoriteFragment);
     }
 
     private void appendTranslationFragment(SectionsPagerAdapter adapter) {
         TranslateFragment translateFragment = new TranslateFragment();
         component.inject(translateFragment);
         adapter.addFrag(translateFragment, getString(R.string.translation));
+
+
     }
 
     private void appendHistoryFragment(SectionsPagerAdapter adapter) {
         HistoryFragment historyFragment = new HistoryFragment();
-        historyFragment.setSelectedFragmentListener((fragment, layoutId) -> {
-            Log.d("[Debug]", "HistoryFragment onStart");
-            HistoryService historyService = new HistoryService(component.provideStorIOSQLite());
-            historyService.getHistory()
+        adapter.addFrag(historyFragment, getString(R.string.history));
+
+        initListFragment(historyFragment);
+    }
+
+    private void initListFragment(TranslationListFragment fragment) {
+        fragment.setSelectedFragmentListener((f, type) -> {
+            Log.d("[Debug]", "Fragment selected -> " + type);
+
+            translationService.getTranslationItems(type)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(translations -> {
+                        TranslationAdapter translationAdapter = new TranslationAdapter(f.getContext(), new ArrayList<>(translations));
+                        translationAdapter.setOnChangeFavoriteListener((v, translationItem) -> {
+                            if (translationItem.getIsFavorite()) {
+                                TranslationParameters parameters = translationItem.getParameters();
+                                translationService.insertOrUpdate(TranslationType.Favorite, parameters.getDirection(), parameters.getText(), translationItem.getValues())
+                                        .subscribeOn(Schedulers.newThread())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(o -> {
+                                            Log.d("[Debug]", "insert favorite");
+                                        });
+                            } else {
+                                if (type == TranslationType.Favorite) {
+                                    translationService.delete(translationItem)
+                                            .subscribeOn(Schedulers.newThread())
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe(isDeleted -> {
+                                                if (isDeleted) {
+                                                    Log.d("[Debug]", "refresh favorite");
+                                                    fragment.refresh();
+                                                }
+                                            });
+                                } else {
+                                    translationService.deleteFavorite(translationItem)
+                                            .subscribeOn(Schedulers.newThread())
+                                            .observeOn(AndroidSchedulers.mainThread())
+                                            .subscribe();
+                                }
+                            }
+                        });
 
-
-                        TranslationAdapter translationAdapter = new TranslationAdapter(fragment.getContext(), new ArrayList<>(translations));
                         translationAdapter.setOnDeleteItemListener((v, translationItem) -> {
-                            historyService.Delete(translationItem)
+                            translationService.delete(translationItem)
                                     .subscribeOn(Schedulers.newThread())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(isDeleted -> {
                                         if (isDeleted) {
-                                            Log.d("[Debug]", "refresh history");
-                                            historyFragment.selectFragment();
+                                            Log.d("[Debug]", "refresh fragment");
+                                            fragment.refresh();
                                         }
                                     });
                         });
 
-                        historyFragment.updateHistoryList(translationAdapter);
+                        fragment.updateList(translationAdapter);
                     });
         });
-        component.inject(historyFragment);
-        adapter.addFrag(historyFragment, getString(R.string.history));
     }
 }
 

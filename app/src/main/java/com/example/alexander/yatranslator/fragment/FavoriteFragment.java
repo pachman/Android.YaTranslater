@@ -10,17 +10,16 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import com.example.alexander.yatranslator.R;
-import com.example.alexander.yatranslator.dependency.TranslateComponent;
+import com.example.alexander.yatranslator.db.tables.TranslationType;
+import com.example.alexander.yatranslator.ui.adapter.TranslationAdapter;
 
-import javax.inject.Inject;
-
-public class FavoriteFragment extends Fragment {
+public class FavoriteFragment extends Fragment implements TranslationListFragment {
     @BindView(R.id.favoriteListView)
     ListView favoriteListView;
 
     private Unbinder unbinder;
-    @Inject
-    TranslateComponent component;
+
+    private SelectedFragmentListener selectedFragmentListener;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -28,7 +27,28 @@ public class FavoriteFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView  = inflater.inflate(R.layout.favorite_fragment, container, false);
         unbinder = ButterKnife.bind(this, rootView);
+        refresh();
 
         return rootView;
+    }
+
+    public void updateList(TranslationAdapter adapter){
+        favoriteListView.setAdapter(adapter);
+    }
+
+    public void setSelectedFragmentListener(SelectedFragmentListener selectedFragmentListener){
+        this.selectedFragmentListener = selectedFragmentListener;
+    }
+
+    @Override
+    public void refresh() {
+        if(selectedFragmentListener != null)
+            selectedFragmentListener.onSelectedFragment(this, TranslationType.Favorite);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 }

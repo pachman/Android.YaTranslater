@@ -4,20 +4,16 @@ import com.example.alexander.yatranslator.db.TranslationParameters;
 
 import java.util.List;
 
-/**
- * Created by Alexander on 09.04.2017.
- */
 public class TranslationItem {
     private final List<String> values;
     private final TranslationParameters parameters;
     private Boolean isFavorite;
 
-    public TranslationItem(TranslationParameters parameters, List<String> translations) {
+    public TranslationItem(TranslationParameters parameters, List<String> translations, Boolean isFavorite) {
         this.values = translations;
         this.parameters = parameters;
-        this.isFavorite = false;
+        this.isFavorite = isFavorite;
     }
-
 
 
     public List<String> getValues() {

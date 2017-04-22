@@ -10,18 +10,14 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import com.example.alexander.yatranslator.R;
-import com.example.alexander.yatranslator.dependency.TranslateComponent;
+import com.example.alexander.yatranslator.db.tables.TranslationType;
 import com.example.alexander.yatranslator.ui.adapter.TranslationAdapter;
 
-import javax.inject.Inject;
-
-public class HistoryFragment extends Fragment implements SelectFragmentImpl{
+public class HistoryFragment extends Fragment implements TranslationListFragment {
     @BindView(R.id.historyListView)
     ListView historyListView;
 
     private Unbinder unbinder;
-    @Inject
-    TranslateComponent component;
     private SelectedFragmentListener selectedFragmentListener;
 
     @Override
@@ -30,12 +26,12 @@ public class HistoryFragment extends Fragment implements SelectFragmentImpl{
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.history_fragment, container, false);
         unbinder = ButterKnife.bind(this, rootView);
-        selectFragment();
+        refresh();
 
         return rootView;
     }
 
-    public void updateHistoryList(TranslationAdapter adapter){
+    public void updateList(TranslationAdapter adapter){
         historyListView.setAdapter(adapter);
     }
 
@@ -44,15 +40,15 @@ public class HistoryFragment extends Fragment implements SelectFragmentImpl{
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        unbinder.unbind();
+    public void refresh() {
+        if(selectedFragmentListener != null)
+            selectedFragmentListener.onSelectedFragment(this, TranslationType.History);
     }
 
     @Override
-    public void selectFragment() {
-        if(selectedFragmentListener != null)
-            selectedFragmentListener.onSelectedFragment(this, R.layout.history_fragment);
+    public void onDestroyView() {
+        super.onDestroyView();
+        unbinder.unbind();
     }
 }
 

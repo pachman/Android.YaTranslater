@@ -21,19 +21,6 @@ public class ParametersTable {
     public static final String COLUMN_DIRECTION_WITH_TABLE_PREFIX = TABLE + "." + COLUMN_DIRECTION;
     public static final String COLUMN_TEXT_WITH_TABLE_PREFIX = TABLE + "." + COLUMN_TEXT;
 
-    public static final Query QUERY_ALL_HISTORY = Query.builder()
-            .table(TABLE)
-            .where(COLUMN_TYPE + "= ?")
-            .whereArgs(TranslationType.History)
-            .orderBy(COLUMN_ORDER + " DESC")
-            .build();
-
-    public static final Query QUERY_ALL_FAVORITE = Query.builder()
-            .table(TABLE)
-            .where(COLUMN_TYPE + "= ?")
-            .whereArgs(TranslationType.Favorite)
-            .build();
-
     private ParametersTable() {
         throw new IllegalStateException("No instances please");
     }
@@ -52,5 +39,14 @@ public class ParametersTable {
     @NonNull
     public static String getDropTableQuery() {
         return "DROP TABLE IF EXISTS " + TABLE + ";";
+    }
+
+    public static Query getQueryByType(Integer type) {
+        return Query.builder()
+                .table(TABLE)
+                .where(COLUMN_TYPE + "= ?")
+                .whereArgs(type)
+                .orderBy(COLUMN_ORDER + " DESC")
+                .build();
     }
 }

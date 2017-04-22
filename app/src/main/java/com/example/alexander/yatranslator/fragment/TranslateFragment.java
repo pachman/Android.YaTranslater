@@ -1,6 +1,5 @@
 package com.example.alexander.yatranslator.fragment;
 
-import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -15,7 +14,7 @@ import butterknife.Unbinder;
 import com.example.alexander.yatranslator.R;
 import com.example.alexander.yatranslator.db.tables.TranslationType;
 import com.example.alexander.yatranslator.dependency.TranslateComponent;
-import com.example.alexander.yatranslator.service.HistoryService;
+import com.example.alexander.yatranslator.service.TranslationService;
 import com.pushtorefresh.storio.sqlite.StorIOSQLite;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -23,7 +22,8 @@ import io.reactivex.schedulers.Schedulers;
 import javax.inject.Inject;
 import java.util.*;
 
-public class TranslateFragment extends Fragment {
+public class TranslateFragment extends Fragment{
+    String uiLang = Locale.getDefault().getLanguage();
     @BindView(R.id.langFrom)
     Spinner langFromSpinner;
     @BindView(R.id.langTo)
@@ -39,8 +39,7 @@ public class TranslateFragment extends Fragment {
 
     @Inject
     TranslateComponent component;
-    @Inject
-    SQLiteOpenHelper sqLiteOpenHelper;
+
     @Inject
     StorIOSQLite storIOSQLite;
 
@@ -50,7 +49,6 @@ public class TranslateFragment extends Fragment {
     Map<String,String> LangsShortNameName;
     List<String> LangsNames = new ArrayList<>();
 
-    //ChooseLanguageFragment chooseLanguageFragment = new ChooseLanguageFragment();
     @Override
     public View onCreateView(LayoutInflater inflater,
                              ViewGroup container,
@@ -58,33 +56,20 @@ public class TranslateFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.translate_fragment, container, false);
         unbinder = ButterKnife.bind(this, rootView);
 
-        String uiLang = "ru";
-        component.provideTranslateClient()
-                .getLanguages(uiLang)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(supportLanguages -> {
-                                 LangsShortNameName = supportLanguages.getLangs();
-                    for (Map.Entry<String, String> entry : LangsShortNameName.entrySet()) {
-                        LangsNames.add(entry.getValue());
-                        String key = entry.getKey();
-                        LangsNameToShortName.put(entry.getValue(), key);
-                    }
-                    Collections.sort(LangsNames);
-
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, LangsNames);
-
-                    langFromSpinner.setAdapter(adapter);
-                    langFromSpinner.setSelection(LangsNames.indexOf(LangsShortNameName.get("ru")));
-                    langToSpinner.setAdapter(adapter);
-                    langToSpinner.setSelection(LangsNames.indexOf(LangsShortNameName.get("en")));
-                });
-
         swapLangButton.setOnClickListener(view -> {
             int fromPosition = langFromSpinner.getSelectedItemPosition();
             langFromSpinner.setSelection(langToSpinner.getSelectedItemPosition());
             langToSpinner.setSelection(fromPosition);
         });
+
+        //todo проверка на интернет
+        component.provideTranslateClient()
+                .getLanguages(uiLang)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(supportLanguages -> {
+                    setLanguages(supportLanguages.getLangs());
+                });
 
         translateFab.setOnClickListener(view -> {
             String text = translateTextView.getText().toString();
@@ -105,7 +90,7 @@ public class TranslateFragment extends Fragment {
 
                         String direction = langFrom + "-" + langTo;
 
-                        HistoryService historyService = new HistoryService(storIOSQLite);
+                        TranslationService historyService = new TranslationService(storIOSQLite);
 
                         historyService.insertOrUpdate(TranslationType.History,direction, text, translatedPhrase.getText())
                                 .subscribeOn(Schedulers.newThread())
@@ -114,6 +99,23 @@ public class TranslateFragment extends Fragment {
                     });
         });
         return rootView;
+    }
+
+    public void setLanguages(Map<String,String> languages){
+        Log.d("[Debug]", "Load languages");
+        LangsShortNameName = languages;
+        for (Map.Entry<String, String> entry : LangsShortNameName.entrySet()) {
+            LangsNames.add(entry.getValue());
+            LangsNameToShortName.put(entry.getValue(), entry.getKey());
+        }
+        Collections.sort(LangsNames);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, LangsNames);
+
+        langFromSpinner.setAdapter(adapter);
+        langFromSpinner.setSelection(LangsNames.indexOf(LangsShortNameName.get("ru")));
+        langToSpinner.setAdapter(adapter);
+        langToSpinner.setSelection(LangsNames.indexOf(LangsShortNameName.get("en")));
     }
 
     @Override

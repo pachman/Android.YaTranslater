@@ -21,6 +21,9 @@ import java.util.ArrayList;
  */
 
 public class TranslationAdapter extends ArrayAdapter<TranslationItem> {
+    private static final int lenCut = 25;
+    private static final String ellipsis = "...";
+
     private final Context mContext;
     private final ArrayList<TranslationItem> dataSet;
     private DeleteItemListener onDeleteItemListener;
@@ -37,7 +40,7 @@ public class TranslationAdapter extends ArrayAdapter<TranslationItem> {
     public TranslationAdapter(@NonNull Context context, ArrayList<TranslationItem> data) {
         super(context, R.layout.translation_item, data);
         this.dataSet = data;
-        this.mContext=context;
+        this.mContext = context;
     }
 
     @NonNull
@@ -63,38 +66,55 @@ public class TranslationAdapter extends ArrayAdapter<TranslationItem> {
         }
 
         viewHolder.favoriteFlag.setOnClickListener(v -> {
-            Log.d("[Debug]", "Click change favorite");
-            Boolean isFavorite = translationItem.getIsFavorite();
-            if (isFavorite) {
-                viewHolder.favoriteFlag.setImageResource(R.drawable.ic_bookmark_border_black_24dp);
-            }else {
-                viewHolder.favoriteFlag.setImageResource(R.drawable.ic_bookmark_black_24dp);
-            }
-            translationItem.setIsFavorite(!isFavorite);
-            //todo реализовать добавление/удаление из избранного
+            Boolean isFavorite = !translationItem.getIsFavorite();
 
-            if(onChangeFavoriteListener != null)
+            Log.d("[Debug]", "Click change favorite to " + isFavorite);
+            translationItem.setIsFavorite(isFavorite);
+
+            setFavoriteImage(viewHolder, isFavorite);
+
+            if (onChangeFavoriteListener != null)
                 onChangeFavoriteListener.onChangeFavorite(v, translationItem);
         });
 
         viewHolder.removeItem.setOnClickListener(v -> {
             Log.d("[Debug]", "Click delete item");
-            if(onDeleteItemListener != null)
+            if (onDeleteItemListener != null)
                 onDeleteItemListener.onDeleteItem(v, translationItem);
         });
 
-        viewHolder.textFrom.setText(translationItem.getParameters().getText());
-        viewHolder.textTo.setText(translationItem.getValues().get(0));
+        String textFrom = translationItem.getParameters().getText();
+        if (textFrom.length() > lenCut) {
+            textFrom = textFrom.substring(0, lenCut) + ellipsis;
+        }
+
+        String textTo = translationItem.getValues().get(0);
+        if (textTo.length() > lenCut) {
+            textTo = textTo.substring(0, lenCut) + ellipsis;
+        }
+
+        viewHolder.textFrom.setText(textFrom);
+        viewHolder.textTo.setText(textTo);
         viewHolder.direction.setText(translationItem.getParameters().getDirection());
+
+        setFavoriteImage(viewHolder, translationItem.getIsFavorite());
 
         return convertView;
     }
 
-    public void setOnDeleteItemListener(DeleteItemListener onDeleteItemListener){
+    private void setFavoriteImage(ViewHolder viewHolder, Boolean isFavorite) {
+        if (isFavorite) {
+            viewHolder.favoriteFlag.setImageResource(R.drawable.ic_bookmark_black_24dp);
+        } else {
+            viewHolder.favoriteFlag.setImageResource(R.drawable.ic_bookmark_border_black_24dp);
+        }
+    }
+
+    public void setOnDeleteItemListener(DeleteItemListener onDeleteItemListener) {
         this.onDeleteItemListener = onDeleteItemListener;
     }
 
-    public void setOnChangeFavoriteListener(ChangeFavoriteListener onChangeFavoriteListener){
+    public void setOnChangeFavoriteListener(ChangeFavoriteListener onChangeFavoriteListener) {
         this.onChangeFavoriteListener = onChangeFavoriteListener;
     }
 }

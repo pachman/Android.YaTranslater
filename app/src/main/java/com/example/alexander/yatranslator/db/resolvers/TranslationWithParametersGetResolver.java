@@ -7,6 +7,8 @@ import com.annimon.stream.Stream;
 import com.example.alexander.yatranslator.db.Translation;
 import com.example.alexander.yatranslator.db.TranslationParameters;
 import com.example.alexander.yatranslator.db.entities.TranslationItem;
+import com.example.alexander.yatranslator.db.tables.ParametersTable;
+import com.example.alexander.yatranslator.db.tables.TranslationType;
 import com.example.alexander.yatranslator.db.tables.TranslationsTable;
 import com.pushtorefresh.storio.sqlite.StorIOSQLite;
 import com.pushtorefresh.storio.sqlite.operations.get.GetResolver;
@@ -32,15 +34,32 @@ public class TranslationWithParametersGetResolver extends GetResolver<Translatio
         if(cursor == null ){
             return null;
         }
-        Log.d("getColumnCount=>>> ", String.valueOf(cursor.getColumnCount()));
+        Log.d("[Debug]","getColumnCount=>>> " + String.valueOf(cursor.getColumnCount()));
         for (String s : cursor.getColumnNames()) {
-            Log.d("getColumnNames=>>> ", s);
+            Log.d("[Debug]", "getColumnNames=>>> " + s);
         }
 
-        Log.d("getCount =>>> ", String.valueOf(cursor.getCount()));
+        Log.d("[Debug]", "getCount =>>> " + String.valueOf(cursor.getCount()));
 
         final StorIOSQLite storIOSQLite = storIOSQLiteFromPerformGet.get();
         final TranslationParameters translationParameters = parametersGetResolver.mapFromCursor(cursor);
+
+        Boolean isFavorite = storIOSQLite.get()
+                .listOfObjects(TranslationParameters.class)
+                .withQuery(
+                    Query.builder()
+                        .table(ParametersTable.TABLE)
+                        .where(ParametersTable.COLUMN_TYPE + "=? AND " +
+                                ParametersTable.COLUMN_TEXT + "=? AND " +
+                                ParametersTable.COLUMN_DIRECTION + "=?")
+                        .whereArgs(TranslationType.Favorite, translationParameters.getText(), translationParameters.getDirection())
+                        .build())
+                .prepare()
+                .executeAsBlocking()
+                .size() > 0;
+
+        Log.d("[Debug]", "is favorite ->" + isFavorite + ", text = " + translationParameters.getText() + ", direction = " + translationParameters.getDirection());
+
 
         final List<Translation> translations = storIOSQLite
                 .get()
@@ -53,7 +72,7 @@ public class TranslationWithParametersGetResolver extends GetResolver<Translatio
                 .prepare()
                 .executeAsBlocking();
         List<String> strings = Stream.of(translations).map(t -> t.getValue()).toList();
-        return new TranslationItem(translationParameters, strings);
+        return new TranslationItem(translationParameters, strings, isFavorite);
     }
 
     @NonNull
