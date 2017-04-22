@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslator;
+package com.example.alexander.yatranslator.ui.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -11,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.alexander.yatranslator.R;
 import com.example.alexander.yatranslator.db.entities.TranslationItem;
 
 import java.util.ArrayList;
@@ -22,12 +23,15 @@ import java.util.ArrayList;
 public class TranslationAdapter extends ArrayAdapter<TranslationItem> {
     private final Context mContext;
     private final ArrayList<TranslationItem> dataSet;
+    private DeleteItemListener onDeleteItemListener;
+    private ChangeFavoriteListener onChangeFavoriteListener;
 
     private static class ViewHolder {
         TextView textFrom;
         TextView textTo;
         TextView direction;
         ImageView favoriteFlag;
+        ImageView removeItem;
     }
 
     public TranslationAdapter(@NonNull Context context, ArrayList<TranslationItem> data) {
@@ -51,6 +55,7 @@ public class TranslationAdapter extends ArrayAdapter<TranslationItem> {
             viewHolder.textTo = (TextView) convertView.findViewById(R.id.text_to);
             viewHolder.direction = (TextView) convertView.findViewById(R.id.direction);
             viewHolder.favoriteFlag = (ImageView) convertView.findViewById(R.id.favoriteFlag);
+            viewHolder.removeItem = (ImageView) convertView.findViewById(R.id.removeItem);
 
             convertView.setTag(viewHolder);
         } else {
@@ -58,7 +63,7 @@ public class TranslationAdapter extends ArrayAdapter<TranslationItem> {
         }
 
         viewHolder.favoriteFlag.setOnClickListener(v -> {
-            Log.d("[Debug]", "Click");
+            Log.d("[Debug]", "Click change favorite");
             Boolean isFavorite = translationItem.getIsFavorite();
             if (isFavorite) {
                 viewHolder.favoriteFlag.setImageResource(R.drawable.ic_bookmark_border_black_24dp);
@@ -67,11 +72,29 @@ public class TranslationAdapter extends ArrayAdapter<TranslationItem> {
             }
             translationItem.setIsFavorite(!isFavorite);
             //todo реализовать добавление/удаление из избранного
+
+            if(onChangeFavoriteListener != null)
+                onChangeFavoriteListener.onChangeFavorite(v, translationItem);
         });
+
+        viewHolder.removeItem.setOnClickListener(v -> {
+            Log.d("[Debug]", "Click delete item");
+            if(onDeleteItemListener != null)
+                onDeleteItemListener.onDeleteItem(v, translationItem);
+        });
+
         viewHolder.textFrom.setText(translationItem.getParameters().getText());
         viewHolder.textTo.setText(translationItem.getValues().get(0));
         viewHolder.direction.setText(translationItem.getParameters().getDirection());
 
         return convertView;
+    }
+
+    public void setOnDeleteItemListener(DeleteItemListener onDeleteItemListener){
+        this.onDeleteItemListener = onDeleteItemListener;
+    }
+
+    public void setOnChangeFavoriteListener(ChangeFavoriteListener onChangeFavoriteListener){
+        this.onChangeFavoriteListener = onChangeFavoriteListener;
     }
 }

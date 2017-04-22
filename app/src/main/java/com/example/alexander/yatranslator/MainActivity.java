@@ -2,14 +2,25 @@ package com.example.alexander.yatranslator;
 
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.TextView;
 import com.example.alexander.yatranslator.dependency.*;
 import com.example.alexander.yatranslator.fragment.FavoriteFragment;
 import com.example.alexander.yatranslator.fragment.HistoryFragment;
+import com.example.alexander.yatranslator.fragment.SelectFragmentImpl;
 import com.example.alexander.yatranslator.fragment.TranslateFragment;
+import com.example.alexander.yatranslator.service.HistoryService;
+import com.example.alexander.yatranslator.ui.SectionsPagerAdapter;
+import com.example.alexander.yatranslator.ui.adapter.TranslationAdapter;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     private static TranslateComponent component;
@@ -25,11 +36,15 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         //ButterKnife.bind(this);
+        Log.d("[Debug]", "Locale " + Locale.getDefault().getLanguage());
+
+
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.container);
-        createViewPager(viewPager);
+
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.bottom_tabs);
+        createViewPager(viewPager, tabLayout);
         tabLayout.setupWithViewPager(viewPager);
         createTabIcons(tabLayout);
     }
@@ -52,22 +67,72 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void createViewPager(ViewPager viewPager) {
+    private void createViewPager(ViewPager viewPager, TabLayout tabLayout) {
         SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        TranslateFragment translateFragment = new TranslateFragment();
-        component.inject(translateFragment);
-        adapter.addFrag(translateFragment, getString(R.string.translation));
+        appendTranslationFragment(adapter);
 
-        HistoryFragment historyFragment = new HistoryFragment();
-        component.inject(historyFragment);
-        adapter.addFrag(historyFragment, getString(R.string.history));
+        appendHistoryFragment(adapter);
 
+        appendFavoriteFragment(adapter);
+
+        TabLayout.TabLayoutOnPageChangeListener listener = new TabLayout.TabLayoutOnPageChangeListener(tabLayout){
+            @Override
+            public void onPageSelected(int position) {
+                Log.d("[Debug]", "Selected " + position);
+                Fragment item = adapter.getItem(position);
+                if(item instanceof SelectFragmentImpl){
+                    ((SelectFragmentImpl)item).selectFragment();
+                }
+
+            }
+        };
+        viewPager.addOnPageChangeListener(listener);
+
+        viewPager.setAdapter(adapter);
+    }
+
+    private void appendFavoriteFragment(SectionsPagerAdapter adapter) {
         FavoriteFragment favoriteFragment = new FavoriteFragment();
         component.inject(favoriteFragment);
         adapter.addFrag(favoriteFragment, getString(R.string.favorite));
+    }
 
-        viewPager.setAdapter(adapter);
+    private void appendTranslationFragment(SectionsPagerAdapter adapter) {
+        TranslateFragment translateFragment = new TranslateFragment();
+        component.inject(translateFragment);
+        adapter.addFrag(translateFragment, getString(R.string.translation));
+    }
+
+    private void appendHistoryFragment(SectionsPagerAdapter adapter) {
+        HistoryFragment historyFragment = new HistoryFragment();
+        historyFragment.setSelectedFragmentListener((fragment, layoutId) -> {
+            Log.d("[Debug]", "HistoryFragment onStart");
+            HistoryService historyService = new HistoryService(component.provideStorIOSQLite());
+            historyService.getHistory()
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(translations -> {
+
+
+                        TranslationAdapter translationAdapter = new TranslationAdapter(fragment.getContext(), new ArrayList<>(translations));
+                        translationAdapter.setOnDeleteItemListener((v, translationItem) -> {
+                            historyService.Delete(translationItem)
+                                    .subscribeOn(Schedulers.newThread())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(isDeleted -> {
+                                        if (isDeleted) {
+                                            Log.d("[Debug]", "refresh history");
+                                            historyFragment.selectFragment();
+                                        }
+                                    });
+                        });
+
+                        historyFragment.updateHistoryList(translationAdapter);
+                    });
+        });
+        component.inject(historyFragment);
+        adapter.addFrag(historyFragment, getString(R.string.history));
     }
 }
 

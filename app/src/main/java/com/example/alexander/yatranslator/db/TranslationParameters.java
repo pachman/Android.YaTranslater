@@ -34,7 +34,7 @@ public class TranslationParameters {
         this.type = type;
         this.direction = direction;
         this.text = text;
-        this.order = new Date().getTime();
+        refreshOrder();
     }
 
     @Nullable
@@ -57,8 +57,8 @@ public class TranslationParameters {
         return order;
     }
 
-    public void setOrder(@NonNull Long order) {
-        this.order = order;
+    public void refreshOrder() {
+        this.order = new Date().getTime();
     }
 
     @NonNull

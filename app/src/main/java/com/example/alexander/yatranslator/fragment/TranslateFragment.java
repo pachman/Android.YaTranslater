@@ -8,31 +8,20 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.MultiAutoCompleteTextView;
-import android.widget.Spinner;
-
+import android.widget.*;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import com.example.alexander.yatranslator.R;
 import com.example.alexander.yatranslator.db.tables.TranslationType;
 import com.example.alexander.yatranslator.dependency.TranslateComponent;
 import com.example.alexander.yatranslator.service.HistoryService;
 import com.pushtorefresh.storio.sqlite.StorIOSQLite;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+
+import javax.inject.Inject;
+import java.util.*;
 
 public class TranslateFragment extends Fragment {
     @BindView(R.id.langFrom)
@@ -118,7 +107,7 @@ public class TranslateFragment extends Fragment {
 
                         HistoryService historyService = new HistoryService(storIOSQLite);
 
-                        historyService.putTranslateItem(TranslationType.History,direction, text, translatedPhrase.getText())
+                        historyService.insertOrUpdate(TranslationType.History,direction, text, translatedPhrase.getText())
                                 .subscribeOn(Schedulers.newThread())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe();

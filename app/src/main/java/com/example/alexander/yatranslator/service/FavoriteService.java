@@ -37,7 +37,7 @@ public class FavoriteService {
 
     public Observable putTranslateItem(Integer type, String direction, String text, List<String> translations){
         if (type == TranslationType.Favorite && !canInsert(text, translations)) {
-            Log.d("putTranslateItem", "can't insert"+ text);
+            Log.d("insertOrUpdate", "can't insert"+ text);
             return Observable.empty();
         }
 

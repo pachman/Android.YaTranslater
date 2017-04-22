@@ -25,6 +25,7 @@ public class ParametersTable {
             .table(TABLE)
             .where(COLUMN_TYPE + "= ?")
             .whereArgs(TranslationType.History)
+            .orderBy(COLUMN_ORDER + " DESC")
             .build();
 
     public static final Query QUERY_ALL_FAVORITE = Query.builder()
