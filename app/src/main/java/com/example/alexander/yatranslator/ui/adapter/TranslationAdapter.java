@@ -21,7 +21,7 @@ import java.util.ArrayList;
  */
 
 public class TranslationAdapter extends ArrayAdapter<TranslationItem> {
-    private static final int lenCut = 25;
+    private static final int lenCut = 22;
     private static final String ellipsis = "...";
 
     private final Context mContext;

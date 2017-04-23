@@ -13,9 +13,9 @@ import com.example.alexander.yatranslator.db.tables.TranslationType;
 import com.example.alexander.yatranslator.dependency.*;
 import com.example.alexander.yatranslator.fragment.FavoriteFragment;
 import com.example.alexander.yatranslator.fragment.HistoryFragment;
+import com.example.alexander.yatranslator.fragment.TranslationFragment;
 import com.example.alexander.yatranslator.fragment.TranslationListFragment;
-import com.example.alexander.yatranslator.fragment.TranslateFragment;
-import com.example.alexander.yatranslator.service.TranslationService;
+import com.example.alexander.yatranslator.service.TranslationStorage;
 import com.example.alexander.yatranslator.ui.SectionsPagerAdapter;
 import com.example.alexander.yatranslator.ui.adapter.TranslationAdapter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -27,7 +27,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
     String uiLang = Locale.getDefault().getLanguage();
     private static TranslateComponent component;
-    private static TranslationService translationService;
+    private static TranslationStorage translationService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,11 +35,12 @@ public class MainActivity extends AppCompatActivity {
         component = DaggerTranslateComponent.builder()
                 .appModule(new AppModule(this))
                 .translateModule(new TranslateModule())
-                .dbModule(new DbModule())
+                .utilsModule(new UtilsModule())
+                .storIOModule(new StorIOModule())
                 .build();
 
         //todo перенести в DI
-        translationService = new TranslationService(component.provideStorIOSQLite());
+        translationService = new TranslationStorage(component.provideStorIOSQLite());
 
         //ButterKnife.bind(this);
 
@@ -102,11 +103,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void appendTranslationFragment(SectionsPagerAdapter adapter) {
-        TranslateFragment translateFragment = new TranslateFragment();
+        TranslationFragment translateFragment = new TranslationFragment();
         component.inject(translateFragment);
         adapter.addFrag(translateFragment, getString(R.string.translation));
-
-
     }
 
     private void appendHistoryFragment(SectionsPagerAdapter adapter) {

@@ -34,12 +34,6 @@ public class TranslationWithParametersGetResolver extends GetResolver<Translatio
         if(cursor == null ){
             return null;
         }
-        Log.d("[Debug]","getColumnCount=>>> " + String.valueOf(cursor.getColumnCount()));
-        for (String s : cursor.getColumnNames()) {
-            Log.d("[Debug]", "getColumnNames=>>> " + s);
-        }
-
-        Log.d("[Debug]", "getCount =>>> " + String.valueOf(cursor.getCount()));
 
         final StorIOSQLite storIOSQLite = storIOSQLiteFromPerformGet.get();
         final TranslationParameters translationParameters = parametersGetResolver.mapFromCursor(cursor);
@@ -59,7 +53,6 @@ public class TranslationWithParametersGetResolver extends GetResolver<Translatio
                 .size() > 0;
 
         Log.d("[Debug]", "is favorite ->" + isFavorite + ", text = " + translationParameters.getText() + ", direction = " + translationParameters.getDirection());
-
 
         final List<Translation> translations = storIOSQLite
                 .get()

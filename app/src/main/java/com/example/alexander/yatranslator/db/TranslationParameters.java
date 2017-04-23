@@ -20,6 +20,9 @@ public class TranslationParameters {
     @StorIOSQLiteColumn(name = ParametersTable.COLUMN_TYPE)
     Integer type;
     @NonNull
+    @StorIOSQLiteColumn(name = ParametersTable.COLUMN_IS_FAVORITE)
+    Boolean isFavorite;
+    @NonNull
     @StorIOSQLiteColumn(name = ParametersTable.COLUMN_DIRECTION)
     String direction;
     @NonNull
@@ -55,6 +58,15 @@ public class TranslationParameters {
     @NonNull
     public Long getOrder() {
         return order;
+    }
+
+    @NonNull
+    public Boolean getFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(@NonNull Boolean favorite) {
+        isFavorite = favorite;
     }
 
     public void refreshOrder() {

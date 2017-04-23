@@ -13,6 +13,8 @@ public class ParametersTable {
 
     public static final String COLUMN_TYPE = "type";
 
+    public static final String COLUMN_IS_FAVORITE = "isFavorite";
+
     public static final String COLUMN_DIRECTION = "direction";
 
     public static final String COLUMN_TEXT = "text";
@@ -31,6 +33,7 @@ public class ParametersTable {
                 + COLUMN_ID + " INTEGER NOT NULL PRIMARY KEY, "
                 + COLUMN_ORDER + " INTEGER NOT NULL, "
                 + COLUMN_TYPE + " INTEGER NOT NULL, "
+                + COLUMN_IS_FAVORITE + " INTEGER NOT NULL, "
                 + COLUMN_DIRECTION + " TEXT NOT NULL, "
                 + COLUMN_TEXT + " TEXT NOT NULL"
                 + ");";

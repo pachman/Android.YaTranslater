@@ -17,13 +17,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        Fragment fragment = fragmentList.get(position);
-//        Log.d("[Debug]", "getItem "+position);
-//        if(fragment instanceof OnSelectedFragment){
-//            Log.d("[Debug]", "instanceof OnSelectedFragment");
-//            ((OnSelectedFragment) fragment).onSelected();
-//        }
-        return fragment;
+        return fragmentList.get(position);
     }
 
     public void addFrag(Fragment fragment, String title) {

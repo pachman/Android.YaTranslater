@@ -13,10 +13,10 @@ import io.reactivex.Observable;
 import java.util.List;
 
 
-public class TranslationService {
+public class TranslationStorage {
     StorIOSQLite storIOSQLite;
 
-    public TranslationService(StorIOSQLite storIOSQLite) {
+    public TranslationStorage(StorIOSQLite storIOSQLite) {
         this.storIOSQLite = storIOSQLite;
     }
 
@@ -49,7 +49,7 @@ public class TranslationService {
     }
 
     public Observable<Boolean> delete(TranslationItem translationItem) {
-        Log.d("[Debug]", "TranslationService -> delete -> translationItem " + translationItem.getParameters().getId());
+        Log.d("[Debug]", "TranslationStorage -> delete -> translationItem " + translationItem.getParameters().getId());
 
         return Observable.defer(() -> Observable.just(
                 storIOSQLite.delete()
@@ -70,7 +70,7 @@ public class TranslationService {
     }
 
     public Observable insertOrUpdate(Integer type, String direction, String text, List<String> translations) {
-        Log.d("[Debug]", "TranslationService -> insertOrUpdate by type " + type);
+        Log.d("[Debug]", "TranslationStorage -> insertOrUpdate by type " + type);
 
         return Observable.defer(() -> {
             List<TranslationParameters> translationParametersList = storIOSQLite.get()
@@ -89,7 +89,7 @@ public class TranslationService {
             PutResult putResult;
             if (translationParametersList.size() > 0) {
                 TranslationParameters translationParameters = translationParametersList.get(0);
-                Log.d("[Debug]", "TranslationService -> Update " + translationParameters.getId());
+                Log.d("[Debug]", "TranslationStorage -> Update " + translationParameters.getId());
                 translationParameters.refreshOrder();
 
                 putResult = storIOSQLite.put()
@@ -98,7 +98,7 @@ public class TranslationService {
                         .executeAsBlocking();
 
             } else {
-                Log.d("[Debug]", "TranslationService -> Insert ");
+                Log.d("[Debug]", "TranslationStorage -> Insert ");
 
                 TranslationParameters parameters = new TranslationParameters(null, type, direction, text);
                 TranslationItem withParameters = new TranslationItem(parameters, translations, type == TranslationType.Favorite);
@@ -113,10 +113,4 @@ public class TranslationService {
         });
     }
 
-    private boolean canInsert(String text, List<String> translations) {
-        return text == null || text.isEmpty()
-                || translations == null
-                || translations.isEmpty()
-                || translations.get(0) == text;
-    }
 }

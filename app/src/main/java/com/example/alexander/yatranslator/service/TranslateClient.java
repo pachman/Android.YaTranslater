@@ -12,5 +12,7 @@ public interface TranslateClient{
     Observable<TranslatedPhrase> translate(String text, String langFrom, String langTo);
 
     Observable<SupportLanguages> getLanguages(String uiLang);
+
+    Observable<SupportLanguages> getConstantLanguages();
 }
 

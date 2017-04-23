@@ -16,17 +16,9 @@ import dagger.Provides;
 
 import javax.inject.Singleton;
 
-/**
- * Created by Alexander on 09.04.2017.
- */
 @Module
-public class DbModule {
+public class StorIOModule {
 
-    // We suggest to keep one instance of StorIO (SQLite or ContentResolver)
-    // It's thread safe and so on, so just share it.
-    // But if you need you can have multiple instances of StorIO
-    // (SQLite or ContentResolver) with different settings such as type mapping, logging and so on.
-    // But keep in mind that different instances of StorIOSQLite won't share notifications!
     @Provides
     @NonNull
     @Singleton

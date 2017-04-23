@@ -3,10 +3,8 @@ package com.example.alexander.yatranslator.gateway.dto;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Alexander on 01.04.2017.
- */
 public class LanguagesResponse {
+
     private List<String> dirs;
     private Map<String, String> langs;
 
