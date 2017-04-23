@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.alexander.yatranslator.R;
-import com.example.alexander.yatranslator.db.entities.TranslationItem;
+import com.example.alexander.yatranslator.storio.entities.TranslationItem;
 
 import java.util.ArrayList;
 

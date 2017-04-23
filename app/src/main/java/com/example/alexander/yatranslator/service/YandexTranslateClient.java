@@ -2,9 +2,9 @@ package com.example.alexander.yatranslator.service;
 
 import android.content.Context;
 import com.example.alexander.yatranslator.R;
-import com.example.alexander.yatranslator.gateway.TranslateApi;
-import com.example.alexander.yatranslator.service.model.SupportLanguages;
-import com.example.alexander.yatranslator.service.model.TranslatedPhrase;
+import com.example.alexander.yatranslator.retrofit.TranslateApi;
+import com.example.alexander.yatranslator.service.models.SupportLanguages;
+import com.example.alexander.yatranslator.service.models.TranslatedPhrase;
 import io.reactivex.Observable;
 import okhttp3.*;
 import retrofit2.Retrofit;

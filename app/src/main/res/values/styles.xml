@@ -20,4 +20,12 @@
         <item name="android:layout_height">50dp</item>
         <item name="android:layout_marginTop">5dp</item>
     </style>
+    <style parent="@android:style/Widget.TextView" name="EmptyListTextView">
+        <item name="android:text">Список пуст</item>
+        <item name="android:textSize">20dp</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
 </resources>

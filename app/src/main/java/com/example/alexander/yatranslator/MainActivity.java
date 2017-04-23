@@ -8,17 +8,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.TextView;
-import com.example.alexander.yatranslator.db.TranslationParameters;
-import com.example.alexander.yatranslator.db.tables.TranslationType;
-import com.example.alexander.yatranslator.dependency.*;
-import com.example.alexander.yatranslator.fragment.FavoriteFragment;
-import com.example.alexander.yatranslator.fragment.HistoryFragment;
-import com.example.alexander.yatranslator.fragment.TranslationFragment;
-import com.example.alexander.yatranslator.fragment.TranslationListFragment;
+import com.example.alexander.yatranslator.dagger.*;
+import com.example.alexander.yatranslator.fragments.FavoriteFragment;
+import com.example.alexander.yatranslator.fragments.HistoryFragment;
+import com.example.alexander.yatranslator.fragments.TranslationFragment;
+import com.example.alexander.yatranslator.fragments.TranslationListFragment;
 import com.example.alexander.yatranslator.service.TranslationStorage;
+import com.example.alexander.yatranslator.storio.entities.TranslationItem;
+import com.example.alexander.yatranslator.storio.entities.TranslationType;
 import com.example.alexander.yatranslator.ui.SectionsPagerAdapter;
 import com.example.alexander.yatranslator.ui.adapter.TranslationAdapter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 import java.util.ArrayList;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     String uiLang = Locale.getDefault().getLanguage();
     private static TranslateComponent component;
     private static TranslationStorage translationService;
+    ViewPager viewPager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,9 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         //ButterKnife.bind(this);
 
-        Log.d("[Debug]", "Locale " + uiLang);
-
-        ViewPager viewPager = (ViewPager) findViewById(R.id.container);
+        viewPager = (ViewPager) findViewById(R.id.container);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.bottom_tabs);
         createViewPager(viewPager, tabLayout);
@@ -91,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
         viewPager.addOnPageChangeListener(listener);
         viewPager.setAdapter(adapter);
     }
@@ -99,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         FavoriteFragment favoriteFragment = new FavoriteFragment();
         adapter.addFrag(favoriteFragment, getString(R.string.favorite));
 
-        initListFragment(favoriteFragment);
+        initTranslationListFragment(favoriteFragment, adapter);
     }
 
     private void appendTranslationFragment(SectionsPagerAdapter adapter) {
@@ -112,62 +114,57 @@ public class MainActivity extends AppCompatActivity {
         HistoryFragment historyFragment = new HistoryFragment();
         adapter.addFrag(historyFragment, getString(R.string.history));
 
-        initListFragment(historyFragment);
+        initTranslationListFragment(historyFragment, adapter);
     }
 
-    private void initListFragment(TranslationListFragment fragment) {
+    private void initTranslationListFragment(TranslationListFragment fragment, SectionsPagerAdapter adapter) {
+        int translateIndex = 0;
         fragment.setSelectedFragmentListener((f, type) -> {
             Log.d("[Debug]", "Fragment selected -> " + type);
+
+            fragment.setSelectedListItemListener(translationItem -> {
+                viewPager.setCurrentItem(translateIndex);
+                Fragment translationFragment = adapter.getItem(translateIndex);
+                if (translationFragment instanceof TranslationFragment) {
+                    ((TranslationFragment) translationFragment).setTranslationItem(translationItem);
+                }
+            });
 
             translationService.getTranslationItems(type)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(translations -> {
                         TranslationAdapter translationAdapter = new TranslationAdapter(f.getContext(), new ArrayList<>(translations));
-                        translationAdapter.setOnChangeFavoriteListener((v, translationItem) -> {
-                            if (translationItem.getIsFavorite()) {
-                                TranslationParameters parameters = translationItem.getParameters();
-                                translationService.insertOrUpdate(TranslationType.Favorite, parameters.getDirection(), parameters.getText(), translationItem.getValues())
-                                        .subscribeOn(Schedulers.newThread())
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(o -> {
-                                            Log.d("[Debug]", "insert favorite");
-                                        });
-                            } else {
-                                if (type == TranslationType.Favorite) {
-                                    translationService.delete(translationItem)
-                                            .subscribeOn(Schedulers.newThread())
-                                            .observeOn(AndroidSchedulers.mainThread())
-                                            .subscribe(isDeleted -> {
-                                                if (isDeleted) {
-                                                    Log.d("[Debug]", "refresh favorite");
-                                                    fragment.refresh();
-                                                }
-                                            });
-                                } else {
-                                    translationService.deleteFavorite(translationItem)
-                                            .subscribeOn(Schedulers.newThread())
-                                            .observeOn(AndroidSchedulers.mainThread())
-                                            .subscribe();
-                                }
-                            }
-                        });
-
+                        translationAdapter.setOnChangeFavoriteListener((v, translationItem) -> changeFavorite(fragment, translationItem));
                         translationAdapter.setOnDeleteItemListener((v, translationItem) -> {
-                            translationService.delete(translationItem)
-                                    .subscribeOn(Schedulers.newThread())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(isDeleted -> {
-                                        if (isDeleted) {
-                                            Log.d("[Debug]", "refresh fragment");
-                                            fragment.refresh();
-                                        }
-                                    });
+                            if (fragment.getType() == TranslationType.Favorite) {
+                                changeFavorite(fragment, translationItem);
+                            } else {
+                                deleteItem(fragment, translationItem);
+                            }
                         });
 
                         fragment.updateList(translationAdapter);
                     });
         });
+    }
+
+    private Disposable changeFavorite(TranslationListFragment fragment, TranslationItem translationItem) {
+        return translationService.changeFavorite(translationItem)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(changed -> {
+                    if (changed) fragment.refresh();
+                });
+    }
+
+    private void deleteItem(TranslationListFragment fragment, TranslationItem translationItem) {
+        translationService.delete(translationItem)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(isDeleted -> {
+                    if (isDeleted) fragment.refresh();
+                });
     }
 }
 

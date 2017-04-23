@@ -1,7 +1,7 @@
 package com.example.alexander.yatranslator.ui.adapter;
 
 import android.view.View;
-import com.example.alexander.yatranslator.db.entities.TranslationItem;
+import com.example.alexander.yatranslator.storio.entities.TranslationItem;
 
 public interface ChangeFavoriteListener
 {

@@ -45,22 +45,23 @@
             android:nextFocusLeft="@id/translateText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/favoriteFromTranslate"
+
             android:layout_alignParentStart="true"
             android:layout_marginTop="70dp"
             android:maxLines="5"
             android:hint="@string/placeholderForEmptyText"
             android:text="Hello world!"/>
 
-    <ImageView
-            android:id="@+id/favoriteFromTranslate"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:clickable="true"
-            android:src="@drawable/ic_bookmark_border_black_24dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignBottom="@id/translateText"
-    />
+    <!--            android:layout_toLeftOf="@+id/favoriteFromTranslate"<ImageView-->
+
+            <!--android:id="@+id/favoriteFromTranslate"-->
+            <!--android:layout_width="35dp"-->
+            <!--android:layout_height="35dp"-->
+            <!--android:clickable="true"-->
+            <!--android:src="@drawable/ic_bookmark_border_black_24dp"-->
+            <!--android:layout_alignParentEnd="true"-->
+            <!--android:layout_alignBottom="@id/translateText"-->
+    <!--/>-->
 
     <ListView
             android:id="@+id/translations"

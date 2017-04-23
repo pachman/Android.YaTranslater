@@ -45,8 +45,6 @@ dependencies {
     compile 'com.pushtorefresh.storio:content-resolver:1.12.3'
     compile 'com.pushtorefresh.storio:sqlite-annotations:1.12.3'
     annotationProcessor 'com.pushtorefresh.storio:sqlite-annotations-processor:1.12.3'
-    compile 'com.pushtorefresh.storio:content-resolver-annotations:1.12.3'
-    annotationProcessor 'com.pushtorefresh.storio:content-resolver-annotations-processor:1.12.3'
     compile "com.google.dagger:dagger:2.9"
     annotationProcessor "com.google.dagger:dagger-compiler:2.9"
     provided 'javax.annotation:jsr250-api:1.0'

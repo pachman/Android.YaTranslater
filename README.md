@@ -9,4 +9,11 @@ dependencies
 * Gson 2.8
 * RxAndroid 2
 * Retrofit 2
+* StorIO
+* Stream
 * Retrolambda
+
+Other
+-----------------------------------
+* Use Android API 23
+* Test device on Android 6
