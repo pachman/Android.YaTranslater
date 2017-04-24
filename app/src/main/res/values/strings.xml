@@ -6,4 +6,5 @@
     <string name="translation">Перевод</string>
     <string name="placeholderForEmptyText">Введите текст</string>
     <string name="InternetNotAvailable">Опаньки, отсутствует интернет соединение!</string>
+    <string name="translateNotSupport">Направление перевода не поддерживается.</string>
 </resources>

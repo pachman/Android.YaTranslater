@@ -13,7 +13,7 @@ import com.example.alexander.yatranslator.fragments.FavoriteFragment;
 import com.example.alexander.yatranslator.fragments.HistoryFragment;
 import com.example.alexander.yatranslator.fragments.TranslationFragment;
 import com.example.alexander.yatranslator.fragments.TranslationListFragment;
-import com.example.alexander.yatranslator.service.TranslationStorage;
+import com.example.alexander.yatranslator.storio.TranslationStorage;
 import com.example.alexander.yatranslator.storio.entities.TranslationItem;
 import com.example.alexander.yatranslator.storio.entities.TranslationType;
 import com.example.alexander.yatranslator.ui.SectionsPagerAdapter;
@@ -23,12 +23,16 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+
+import static com.example.alexander.yatranslator.utils.BaseUtils.canInsert;
+import static com.example.alexander.yatranslator.utils.BaseUtils.showMessage;
 
 public class MainActivity extends AppCompatActivity {
     String uiLang = Locale.getDefault().getLanguage();
     private static TranslateComponent component;
-    private static TranslationStorage translationService;
+    private static TranslationStorage translationStorage;
     ViewPager viewPager;
 
     @Override
@@ -41,11 +45,7 @@ public class MainActivity extends AppCompatActivity {
                 .utilsModule(new UtilsModule())
                 .storIOModule(new StorIOModule())
                 .build();
-
-        //todo перенести в DI
-        translationService = new TranslationStorage(component.provideStorIOSQLite());
-
-        //ButterKnife.bind(this);
+        translationStorage = component.provideTranslationStorage();
 
         viewPager = (ViewPager) findViewById(R.id.container);
 
@@ -93,20 +93,51 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+        viewPager.setOffscreenPageLimit(3);
         viewPager.addOnPageChangeListener(listener);
         viewPager.setAdapter(adapter);
     }
 
-    private void appendFavoriteFragment(SectionsPagerAdapter adapter) {
-        FavoriteFragment favoriteFragment = new FavoriteFragment();
-        adapter.addFrag(favoriteFragment, getString(R.string.favorite));
-
-        initTranslationListFragment(favoriteFragment, adapter);
-    }
-
     private void appendTranslationFragment(SectionsPagerAdapter adapter) {
         TranslationFragment translateFragment = new TranslationFragment();
-        component.inject(translateFragment);
+
+        translateFragment.setTranslationInitListener(() -> {
+            if (component.provideNetworkUtils().isNetworkAvailable()) {
+                Log.d("[Debug Lang]", "isNetworkAvailable getLanguages " + uiLang);
+                component.provideTranslateClient().getLanguages(uiLang).subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(supportLanguages -> translateFragment.setLanguages(supportLanguages));
+            } else {
+                translateFragment.setLanguages( component.provideTranslateClient().getConstantLanguages());
+                showMessage(viewPager, R.string.InternetNotAvailable);
+            }
+        });
+
+        translateFragment.setTranslateListener((text, direction) -> {
+            if (component.provideNetworkUtils().isNetworkAvailable()) {
+                component.provideTranslateClient()
+                        .translate(text, direction)
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(translatedPhrase -> {
+                            List<String> strings = translatedPhrase.getText();
+                            if (!canInsert(text, strings)) {
+                                return;
+                            }
+
+                            translateFragment.setTranslations(strings);
+
+                            translationStorage
+                                    .insertOrUpdateDate(TranslationType.History, direction, text, strings)
+                                    .subscribeOn(Schedulers.newThread())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe();
+                        });
+            }else{
+                showMessage(viewPager, R.string.InternetNotAvailable);
+            }
+        });
+
         adapter.addFrag(translateFragment, getString(R.string.translation));
     }
 
@@ -115,6 +146,13 @@ public class MainActivity extends AppCompatActivity {
         adapter.addFrag(historyFragment, getString(R.string.history));
 
         initTranslationListFragment(historyFragment, adapter);
+    }
+
+    private void appendFavoriteFragment(SectionsPagerAdapter adapter) {
+        FavoriteFragment favoriteFragment = new FavoriteFragment();
+        adapter.addFrag(favoriteFragment, getString(R.string.favorite));
+
+        initTranslationListFragment(favoriteFragment, adapter);
     }
 
     private void initTranslationListFragment(TranslationListFragment fragment, SectionsPagerAdapter adapter) {
@@ -130,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            translationService.getTranslationItems(type)
+            translationStorage.getTranslationItems(type)
                     .subscribeOn(Schedulers.newThread())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(translations -> {
@@ -150,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Disposable changeFavorite(TranslationListFragment fragment, TranslationItem translationItem) {
-        return translationService.changeFavorite(translationItem)
+        return translationStorage.changeFavorite(translationItem)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(changed -> {
@@ -159,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteItem(TranslationListFragment fragment, TranslationItem translationItem) {
-        translationService.delete(translationItem)
+        translationStorage.delete(translationItem)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(isDeleted -> {

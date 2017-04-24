@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslator.fragments;
+package com.example.alexander.yatranslator.fragments.listeners;
 
 import com.example.alexander.yatranslator.storio.entities.TranslationItem;
 

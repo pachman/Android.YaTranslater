@@ -38,8 +38,6 @@ public class TranslationWithParametersGetResolver extends GetResolver<Translatio
 
         Boolean isFavorite = translationParameters.getIsFavorite();
 
-        Log.d("[Debug]", "is favorite ->" + isFavorite + ", text = " + translationParameters.getText() + ", direction = " + translationParameters.getDirection());
-
         final List<Translation> translations = storIOSQLite
                 .get()
                 .listOfObjects(Translation.class)

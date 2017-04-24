@@ -11,6 +11,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import com.example.alexander.yatranslator.R;
+import com.example.alexander.yatranslator.fragments.listeners.SelectedFragmentListener;
+import com.example.alexander.yatranslator.fragments.listeners.SelectedListItemListener;
 import com.example.alexander.yatranslator.storio.entities.TranslationItem;
 import com.example.alexander.yatranslator.storio.entities.TranslationType;
 import com.example.alexander.yatranslator.ui.adapter.TranslationAdapter;

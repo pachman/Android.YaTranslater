@@ -1,4 +1,4 @@
-package com.example.alexander.yatranslator.service;
+package com.example.alexander.yatranslator.storio;
 
 import com.example.alexander.yatranslator.storio.entities.TranslationItem;
 import com.example.alexander.yatranslator.storio.entities.TranslationParameters;

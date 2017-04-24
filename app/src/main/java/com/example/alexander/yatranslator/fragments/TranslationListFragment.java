@@ -1,5 +1,7 @@
 package com.example.alexander.yatranslator.fragments;
 
+import com.example.alexander.yatranslator.fragments.listeners.SelectedFragmentListener;
+import com.example.alexander.yatranslator.fragments.listeners.SelectedListItemListener;
 import com.example.alexander.yatranslator.ui.adapter.TranslationAdapter;
 
 public interface TranslationListFragment {

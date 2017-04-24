@@ -1,7 +1,6 @@
 package com.example.alexander.yatranslator.storio.resolvers;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 import com.annimon.stream.Stream;
 import com.example.alexander.yatranslator.storio.entities.Translation;
 import com.example.alexander.yatranslator.storio.entities.TranslationItem;
@@ -16,9 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Created by Alexander on 09.04.2017.
- */
 public class TranslationWithParametersPutResolver extends PutResolver<TranslationItem>{
     @NonNull
     @Override
@@ -30,8 +26,6 @@ public class TranslationWithParametersPutResolver extends PutResolver<Translatio
                 .executeAsBlocking();
 
         Long id = putParameters.insertedId();
-
-        Log.d("insertedId", id.toString());
 
         List<Translation> translations = Stream.of(object.getValues()).map(s -> new Translation(id, s)).toList();
 

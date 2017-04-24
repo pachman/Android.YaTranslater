@@ -1,8 +1,6 @@
 package com.example.alexander.yatranslator.storio.resolvers;
 
 import android.support.annotation.NonNull;
-
-import android.util.Log;
 import com.example.alexander.yatranslator.storio.entities.Translation;
 import com.example.alexander.yatranslator.storio.entities.TranslationItem;
 import com.example.alexander.yatranslator.storio.tables.ParametersTable;
@@ -23,8 +21,6 @@ public class TranslationWithParametersDeleteResolver extends DeleteResolver<Tran
     @NonNull
     @Override
     public DeleteResult performDelete(@NonNull StorIOSQLite storIOSQLite, @NonNull TranslationItem object) {
-        Log.d("[Debug]", "DeleteResolver TranslationItem " + object.getParameters().getId());
-
         final List<Translation> translations = storIOSQLite
                 .get()
                 .listOfObjects(Translation.class)
@@ -41,8 +37,6 @@ public class TranslationWithParametersDeleteResolver extends DeleteResolver<Tran
                 .object(object.getParameters())
                 .prepare()
                 .executeAsBlocking();
-
-        Log.d("[Debug]", "DeleteResolver Translations " + object.getValues());
 
         storIOSQLite
                 .delete()
